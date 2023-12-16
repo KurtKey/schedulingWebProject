@@ -1,14 +1,13 @@
 # app.py
 import streamlit as st
-from FCFS import fcfs
-from SJF_without_preemption import sjf_without_preemption
-from SJF_with_preemption import sjf_with_preemption
-from RM import rate_monotonic
-from DM import deadline_monotonic
-from EDF import edf
-import pandas as pd
-from gantt_chart_functions import fcfs_sjf_preememptif_sjf_gantt_chart
-from gantt_chart_functions import edf_llf_gantt_chart
+from FCFS.FCFS import fcfs
+from LLF.llf_runner import llf_function
+from EDF.edf_runner import  edf_function
+from SJF.SJF_without_preemption import sjf_without_preemption
+from preemptif_SJF.SJF_with_preemption import sjf_with_preemption
+from RM.rm_runner import rm_runner
+from DM.dm_runner import dm_runner
+from gantt_chart_drawer import gantt_chart
 
 
 def fcfsOrSJF_page(algorithm):
@@ -37,7 +36,7 @@ def fcfsOrSJF_page(algorithm):
             data["Task"].append("T" + str(len(st.session_state.data["Arrival Time"])))
             data["Burst Time"].append(new_burst_time)
             data["Arrival Time"].append(new_arrival_time)
-            st.session_state["data"] = data  # Update session state
+            st.session_state["data"] = data
 
             # Update the displayed table
             st.table(data)
@@ -63,9 +62,9 @@ def fcfsOrSJF_page(algorithm):
 
         st.subheader("Response :")
         st.text(f"waiting_times: {a}, average_waiting_time: {b}")
-        fcfs_sjf_preememptif_sjf_gantt_chart(c)
+        gantt_chart(c)
 
-def dm_rm_edf_page(algorithm):
+def dm_rm_edf_llf_page(algorithm):
     st.subheader(f"{algorithm} Scheduling Algorithm")
     # Initialize the data in session state
     if "data" not in st.session_state:
@@ -117,21 +116,18 @@ def dm_rm_edf_page(algorithm):
             for i in range(len(burst_times))
         ]
         if algorithm == "RM":
-            a, b, c = rate_monotonic(processes)
+            b, c = rm_runner(processes)
         elif algorithm == "DM":
-            a, b, c = deadline_monotonic(processes)
+            b, c = dm_runner(processes)
         elif algorithm == "EDF":
-            # a, b, c = edf(processes)
-            b, c = edf(processes)
-        else:
-            print("later")
+            b, c = edf_function(processes)
+        elif algorithm == "LLF":
+            b, c = llf_function(processes)
 
         st.subheader("Response :")
-        # st.text(f"waiting_times: {a}, average_waiting_time: {b}, gantt: {c}")
-        st.text(f"{b}")
-        df = pd.DataFrame(c)
+        st.text(f"CPU occupation : {b}")
 
-        edf_llf_gantt_chart(df)
+        gantt_chart(c)
 
 
 
@@ -148,7 +144,7 @@ def main():
     if selected_algorithm == "FCFS" or selected_algorithm == "SJF Without Preemption" or selected_algorithm == "SJF With Preemption":
         fcfsOrSJF_page(selected_algorithm)
     else:
-        dm_rm_edf_page(selected_algorithm)
+        dm_rm_edf_llf_page(selected_algorithm)
 
 
 if __name__ == "__main__":

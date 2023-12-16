@@ -32,19 +32,13 @@ def sjf_with_preemption(processes):
             waiting_times[shortest] = end_time - processes[shortest]['Burst Time'] - processes[shortest]['Arrival Time']
 
         current_time += 1
-######
-    current_task = execution_sequence[0][0]
-    time_slots = 0
+    ######
 
     for task, slots in execution_sequence:
-        if task == current_task:
-            time_slots += slots
-        else:
-            gantt_representation.append((f"Task {current_task-1}", time_slots))
-            current_task = task
-            time_slots = slots
-
-    gantt_representation.append((f"Task {current_task-1}", time_slots))
+        if task!='No Task':
+            gantt_representation.append((f"Task {task-1}", slots))
+        else :
+            gantt_representation.append((f"Task {task}", slots))
 
     average_waiting_time = sum(waiting_times) / n
     return waiting_times, average_waiting_time, gantt_representation
